@@ -5,7 +5,9 @@
 // Designed for a Adafruit Feather development board
 // Companion device to the Irrigation Sensor
 #define DataReadyPin       0
+#define SendEnablePin      0
 
+int lastReadingTime;
 
 void getData() {
 //  Serial.println("Getting reading");
@@ -34,7 +36,7 @@ void getData() {
 
 void setup() {
   // put your setup code here, to run once:
-
+  pinMode(SendEnablePin, INPUT);
 }
 
 void loop() {  
@@ -49,4 +51,12 @@ void loop() {
     }
   }
 
+  report();
+
+}
+
+void report(){
+  if (digitalRead(SendEnablePin)==HIGH){
+    Serial.println("Send Report");
+  }
 }

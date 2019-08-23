@@ -7,14 +7,49 @@
 
 #include <WiFi.h>
 
+#define RecvSendEnablePin       9
+
 
 char ssid[] = "yourNetwork";      // your network SSID (name)
 char pass[] = "secretPassword";   // your network password
 int keyIndex = 0;                 // your network key Index number (needed only for WEP)
+String receiver_msg;
 
 int status = WL_IDLE_STATUS;
 
 WiFiServer server(80);
+
+
+void refresh_receiver_message(){
+  //set receiver send enable pin
+  digitalWrite(RecvSendEnablePin, HIGH);
+  delay(200);
+  // read the data from the receiver via SPI or I2C
+  receiver_msg = "foo bar";
+  digitalWrite(RecvSendEnablePin, LOW);
+}
+void make_html(WiFiClient client){
+  client.println("Hello Flooded World</br>");
+  client.println("Receiver Message: "+receiver_msg);
+}
+
+void printWifiStatus() {
+  // print the SSID of the network you're attached to:
+  Serial.print("SSID: ");
+  Serial.println(WiFi.SSID());
+
+  // print your WiFi shield's IP address:
+  IPAddress ip = WiFi.localIP();
+  Serial.print("IP Address: ");
+  Serial.println(ip);
+
+  // print the received signal strength:
+  long rssi = WiFi.RSSI();
+  Serial.print("signal strength (RSSI):");
+  Serial.print(rssi);
+  Serial.println(" dBm");
+}
+
 
 void setup() {
   //Initialize serial and wait for port to open:
@@ -50,7 +85,6 @@ void setup() {
   printWifiStatus();
 }
 
-
 void loop() {
   // listen for incoming clients
   WiFiClient client = server.available();
@@ -75,9 +109,9 @@ void loop() {
           client.println("<!DOCTYPE HTML>");
           client.println("<html>");
 
+          refresh_receiver_message();
           make_html(client);
           
-          }
           client.println("</html>");
           break;
         }
@@ -97,26 +131,6 @@ void loop() {
     client.stop();
     Serial.println("client disonnected");
   }
-}
 
-void make_html(WiFiClient client){
-  client.println("Hello Flooded World");
   
-}
-
-void printWifiStatus() {
-  // print the SSID of the network you're attached to:
-  Serial.print("SSID: ");
-  Serial.println(WiFi.SSID());
-
-  // print your WiFi shield's IP address:
-  IPAddress ip = WiFi.localIP();
-  Serial.print("IP Address: ");
-  Serial.println(ip);
-
-  // print the received signal strength:
-  long rssi = WiFi.RSSI();
-  Serial.print("signal strength (RSSI):");
-  Serial.print(rssi);
-  Serial.println(" dBm");
 }
