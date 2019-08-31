@@ -1,0 +1,20 @@
+Design Concepts
+
+
+Explanation
+----------------------------------------------------------
+(Comms Style)
+---> communication link
+Device[/addition component1, additional component2]
+----------------------------------------------------------
+
+
+FieldSensor (LoRa)---> BaseStation (I2C)--->                Feather (Wifi)--->          Home
+FieldSensor (LoRa)---> BaseStation (LoRa)--->               RPi Zero (Wifi)--->         Home
+FieldSensor (LoRa)---> BaseStation (LoRa)--->               RPi Zero (USB-Ethernet)---> Home
+FieldSensor (LoRa)---> BaseStation/FeatherWing (Wifi)--->                               Home
+FieldSensor (Wifi)--->                                                                  Home
+
+
+FieldSensor (LoRa)---> BaseStation/OLEDMatrix, Buzzer
+FieldSensor (LoRa)---> BaseStation/LEDs,Buzzer
