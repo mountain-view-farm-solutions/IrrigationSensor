@@ -4,32 +4,48 @@
 // Irrigation Sensor
 // Designed for a Adafruit Feather development board
 #include <RH_RF95.h>
-#include "Adafruit_SleepyDog.h"
+#include <RHMesh.H>
+#include <Adafruit_SleepyDog.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
+
+
+// General Configuration
+#define useHandShake       0
+const int updatePeriod=    1;   // in seconds
+const int MeasurePeriod=   10;   // in ms 
+const int threshold=       800;
+const int NODE_ID=         1;
+const int BASE_STATION_ID= 0;
+
+
+#define VBATPIN            A9
+#define DEBUG              0
+#define LOWBAT_LED         5
+
 
 // Radio
 #define RFM95_CS           8
 #define RFM95_RST          4
 #define RFM95_INT          7
 #define RF95_FREQ          915.0
-#define TX_POWER           13
+#define TX_POWER           20
 #define TX_LED             13
+
 // Radio singleton
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
+RHMesh manager(rf95, NODE_ID);
+
 
 // Sensor pins
-#define WaterAIPin         A1
+#define WaterAIPin         A11
 #define WaterDOPin         11
 #define Status_LED         10
+#define ONE_WIRE_BUS       18  // Data wire is plugged into port 2 on the Arduino
 
-// General Configuration
-#define useHandShake       0
-const int updatePeriod=    1;   // in seconds
-const int MeasurePeriod=   10;   // in ms 
-const int threshold=       100;
-#define VBATPIN            A9
-#define NODE_ID            0
-#define DEBUG              0
-#define LOWBAT_LED         5
+
+OneWire oneWire(ONE_WIRE_BUS); // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
+DallasTemperature tempsensors(&oneWire); // Pass our oneWire reference to Dallas Temperature. 
 
 
 // Helper setup
@@ -37,18 +53,20 @@ int packetnum = 0;  // packet counter, we increment per xmission
 
    
 
+int get_temp(int idx, bool trigger){
+  int t=0;
+  if (trigger){
+     tempsensors.requestTemperatures();
+  }
+  t = tempsensors.getTempCByIndex(0);
+  return t;
+}
 void report_status_word(){
-  // status word format
-  //  @@IITTTHHVVWBB\n
-  // @@ Starts frame
-  // ID word
-  // Temperature word
-  // humdity word
-  // raw analog in word
-  // state byte
-  // battery voltage word
-  // new line ends frame
-  int t = 1;
+
+  int tt = get_temp(0, true);
+  int tm = get_temp(0, false);
+  int tg = get_temp(0, false);
+  
   int h = 10;
   int v = get_water_raw();
   int w = v>threshold;
@@ -63,13 +81,23 @@ void report_status_word(){
 
   digitalWrite(LOWBAT_LED, b<3.7);
 
-  char packet[20];
-  sprintf(packet, "@@%02x%02x%02x%02x%04x%02x%04x\n",NODE_ID, packetnum++, t,h,v,w,rb);
+  char packet[32]="";
+
+  // message format
+  sprintf(packet, "%02x%02x%04x%04x%04x%04x%01x%04x", NODE_ID,       // 02 node id      
+                                                      packetnum++,   // 02 packet counter
+                                                      tg,            // 04 temp ground
+                                                      tm,            // 04 temp mid
+                                                      tt,            // 04 temp top
+                                                      v,             // 04 Ain
+                                                      w,             // 01 State
+                                                      rb);           // 04 VBatt 
   
   if (DEBUG){
     Serial.print("Count:      " ); Serial.println(packetnum);
-    Serial.print("Temp:       " ); Serial.println(t);
-    Serial.print("Hum:        " ); Serial.println(h);
+    Serial.print("TempGND:    " ); Serial.println(tg);
+    Serial.print("TempMID:    " ); Serial.println(tm);
+    Serial.print("TempTOP:    " ); Serial.println(tt);
     Serial.print("Ain:        " ); Serial.println(v);
     Serial.print("State:      " ); Serial.println(w);
     Serial.print("VBatRaw:    " ); Serial.println(rb);
@@ -77,8 +105,11 @@ void report_status_word(){
     Serial.print("LOW VBat:   " ); Serial.println(b<3.7);
     Serial.print("Packet:     " ); Serial.println(packet);
   }
+
+//  if (digitalRead(TX_ENABLE) {
+    vtransmitt(packet);  
+//  }
   
-  vtransmitt(packet);
 
   // reset packet counter
   if (packetnum > 255){
@@ -88,7 +119,8 @@ void report_status_word(){
 
 void vtransmitt(char *packet){
   digitalWrite(TX_LED, HIGH);
-  transmitt(packet);
+//  transmitt(packet);
+  meshtransmitt(packet);
   digitalWrite(TX_LED, LOW);
   
 }
@@ -103,15 +135,16 @@ int get_water_raw(){
   return v;
 }
 
-void transmitt(char *packet){
-//  itoa(packetnum++, packet+13, 10);
-//  Serial.print("Sending "); Serial.print(packet);
-//  itoa(packetnum++, packet+13, 10);
-//  packet[19] = 0;
-  
+void meshtransmitt(char* packet){
+  digitalWrite(TX_LED, HIGH);
+  manager.sendtoWait((uint8_t *)packet, sizeof(packet), BASE_STATION_ID);
+  digitalWrite(TX_LED, LOW);
+}
+
+void transmitt(char *packet){  
   //Serial.println("Sending...");
   delay(10);
-  rf95.send((uint8_t *)packet, 20);
+  rf95.send((uint8_t *)packet, sizeof(packet));
  
   //Serial.println("Waiting for packet to complete..."); 
   delay(10);
@@ -184,15 +217,13 @@ void setup() {
   // If you are using RFM95/96/97/98 modules which uses the PA_BOOST transmitter pin, then 
   // you can set transmitter powers from 5 to 23 dBm:
   rf95.setTxPower(TX_POWER, false);
+
+  manager.init();
+  
 }
    
 
 void loop() {
-  // put your main code here, to run repeatedly:
-
-//  report_temp();
-//  report_hum();
-//  report_water();
   report_status_word();
   rf95.sleep();
   if (DEBUG){
