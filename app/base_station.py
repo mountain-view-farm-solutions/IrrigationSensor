@@ -15,6 +15,7 @@
 # ===============================================================================
 
 import os
+import time
 from datetime import datetime
 from threading import Thread, Lock
 
@@ -45,7 +46,7 @@ class RPiBaseStation(object):
                 try:
                     self._parse(resp)
                 except BaseException as e:
-                    print('error: ', e)
+                    print('error: ', e, 'resp', resp, len(resp))
 
     def _parse(self, resp):
         """
@@ -94,8 +95,20 @@ class RPiBaseStation(object):
             print(''.join(['{:<10s}'.format(str(r)) for r in rdata]))
             print(''.join(['{:<10s}'.format(f) for f in fdata]))
 
-    def _recv(self):
-        resp = self._dev.readline()
+    def _recv(self, timeout=4):
+        # resp = self._dev.readline()
+        resp = b''
+        st = time.time()
+        while 1:
+            inw = self._dev.inWaiting()
+            if inw:
+                resp += self._dev.read(inw)
+            if resp.endswith('\r\n'):
+                break
+            if time.time() - st > timeout:
+                break
+            time.sleep(0.1)
+
         return resp.decode('utf8')
 
 
