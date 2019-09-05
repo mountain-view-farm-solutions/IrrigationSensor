@@ -24,8 +24,8 @@ import serial
 
 class RPiBaseStation(object):
     def __init__(self, port):
-        self._ctx = None
-        # self._dev = serial.Serial(port=port)
+        self._ctx = {}
+        self._dev = serial.Serial(port=port)
         self._lock = Lock()
 
     def run(self):
