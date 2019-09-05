@@ -42,7 +42,10 @@ class RPiBaseStation(object):
         while 1:
             resp = self._recv()
             if resp:
-                self._parse(resp)
+                try:
+                    self._parse(resp)
+                except BaseException as e:
+                    print('error: ', e)
 
     def _parse(self, resp):
         """
