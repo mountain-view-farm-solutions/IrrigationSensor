@@ -16,7 +16,7 @@
 
 from flask import Flask, render_template
 
-from app.base_station import BaseStation
+from base_station import BaseStation
 
 bsapp = Flask(__name__)
 
