@@ -64,7 +64,7 @@ class RPiBaseStation(object):
         rdata = []
         cbit = 0
         header, lens = zip(*headert)
-        header= list(header)
+        header = list(header)
         for k, l in headert:
             rdata.append(resp[cbit:cbit + l])
             cbit += l
@@ -107,7 +107,9 @@ class Handler(BaseHTTPRequestHandler):
         with open('home.html', 'r') as rfile:
             template = rfile.read()
 
-        self.wfile.write(template.format(**ctx))
+        if ctx:
+            template = template.format(**ctx)
+        self.wfile.write(template)
 
 
 def main():

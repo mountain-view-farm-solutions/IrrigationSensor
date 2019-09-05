@@ -17,7 +17,7 @@
 #define RFM95_RST          4
 #define RFM95_INT          7
 #define RF95_FREQ          915.0
-#define TX_POWER           5
+#define TX_POWER           13
 #define NODE_ID            0
 
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
@@ -33,7 +33,7 @@ char data[18];
 
 
 void setup() {
-  Serial.begin(9600);
+  Serial1.begin(9600);
   delay(1000);
   
   // relay comms
@@ -67,23 +67,24 @@ void setup() {
  
   // Defaults after init are 434.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
 
-  rf95.setModemConfig(rf95.Bw125Cr48Sf4096);
+  //rf95.setModemConfig(rf95.Bw125Cr48Sf4096);
   
   // The default transmitter power is 13dBm, using PA_BOOST.
   // If you are using RFM95/96/97/98 modules which uses the PA_BOOST transmitter pin, then
   // you can set transmitter powers from 5 to 23 dBm:
   rf95.setTxPower(TX_POWER, false);
   
+  manager.init();
   
 }
+uint8_t buf[RH_MESH_MAX_MESSAGE_LEN];
+
+
 
 void loop() {  
-//  receive();
   meshreceive();
-
 }
 
-uint8_t buf[RH_MESH_MAX_MESSAGE_LEN];
 void meshreceive(){
   uint8_t len = sizeof(buf);
   uint8_t from;
@@ -94,123 +95,61 @@ void meshreceive(){
 }
 
 
-void receive(){
-  if (rf95.available())
-  {
-    // Should be a message for us now
-    uint8_t len = sizeof(buf);
- 
-    if (rf95.recv(buf, &len))
-    {
-      digitalWrite(RxLED, HIGH);
-//      RH_RF95::printBuffer("Received: ", buf, len);
-//      Serial.print("Got: ");
-//      Serial.println((char*)buf);
-//      setData((char*)buf);
-//      Serial.print("RSSI: ");
-//      Serial.println(rf95.lastRssi(), DEC);
-        serial_relay(0);
-        
-      // Send a reply
-//      uint8_t data[] = "And hello back to you";
-//      rf95.send(data, sizeof(data));
-//      rf95.waitPacketSent();
-//      Serial.println("Sent a reply");
-      digitalWrite(RxLED, LOW);
-    }
-    else
-    {
-      Serial.println("Receive failed");
-    }
-  }
-}
+
 
 void serial_relay(uint8_t from){
+  digitalWrite(RxLED, HIGH);
   char rssi[5];
   sprintf(rssi, "%02x%02x", abs(rf95.lastRssi()), from);
-  Serial.print((char*)buf);
-  Serial.println(rssi);
+  Serial1.print((char*)buf);
+  Serial1.println(rssi);
+  delay(200);
+  digitalWrite(RxLED, LOW);
   
 }
-//void setData(char *buf){
-//  
-//  // copy buffer into data
-//  strncpy(data, buf, 16);
-//  char buf2[2]="";
-//  char buf4[6]="";
-//
-//  // node
-//  strncpy(buf2, buf+2, 2);
-//  int v = (int)strtol(buf2, NULL, 16);  
-//  Serial.print("node buff: "); Serial.println(buf2);
-//  Serial.print("node: "); Serial.println(v);
-//
-//  // count
-//  strncpy(buf2, buf+4, 2);
-//  v = (int)strtol(buf2, NULL, 16);  
-//  Serial.print("count buff: "); Serial.println(buf2);
-//  Serial.print("count: "); Serial.println(v);
-//
-//  // temp
-//  strncpy(buf2, buf+6, 2);
-//  v = (int)strtol(buf2, NULL, 16);  
-//  Serial.print("temp buff: "); Serial.println(buf2);
-//  Serial.print("temp: "); Serial.println(v);
-//
-//  // hum
-//  strncpy(buf2, buf+8, 2);
-//  v = (int)strtol(buf2, NULL, 16);  
-//  Serial.print("hum buff: "); Serial.println(buf2);
-//  Serial.print("hum: "); Serial.println(v);
-//
-//  // Ain
-//  strncpy(buf4, buf+10, 4);
-//  v = (int)strtol(buf4, NULL, 16);  
-//  Serial.print("Ain buff: "); Serial.println(buf4);
-//  Serial.print("Ain: "); Serial.println(v);
-//
-//  //State
-//  strncpy(buf2, buf+14, 2);
-//  v = (int)strtol(buf2, NULL, 16);  
-//  Serial.print("State buff: "); Serial.println(buf2);
-//  Serial.print("State: "); Serial.println(v);
-//  
-//  // Vbatt
-//  strncpy(buf4, buf+16, 4);
-//  v = (int)strtol(buf4, NULL, 16);  
-//  Serial.print("battery buff: "); Serial.println(buf4);
-//  Serial.print("battery voltage raw: "); Serial.println(v);
-//  float vbat = v*3.3*2/1024;
-//  Serial.print("battery voltage: "); Serial.println(vbat);
-//  Serial.print("|\n");
-//}
-//  
-//void requestEvent(){
-//  Serial.println("Request event");
-//  Wire.write(data);
-//}
-
 // EOF
-//void getData() {
-//  Serial.println("Getting reading");
-//  //Read the temperature data
-//  int tempData = readRegister(0x21, 2);
-//
-//  // convert the temperature to celsius and display it:
-//  temperature = (float)tempData / 20.0;
-//
-//  //Read the pressure data highest 3 bits:
-//  byte  pressureDataHigh = readRegister(0x1F, 1);
-//  pressureDataHigh &= 0b00000111; //you only needs bits 2 to 0
-//
-//  //Read the pressure data lower 16 bits:
-//  unsigned int pressureDataLow = readRegister(0x20, 2);
-//  //combine the two parts into one 19-bit number:
-//  pressure = ((pressureDataHigh << 16) | pressureDataLow) / 4;
-//
-//  Serial.print("Temperature: ");
-//  Serial.print(temperature);
-//  Serial.println(" degrees C");
-//  Serial.print("Pressure: " + String(pressure));
-//  Serial.println(" Pa");
+//void loop()
+//{
+//  uint8_t len = sizeof(buf);
+//  uint8_t from;
+//  if (manager.recvfromAck(buf, &len, &from))
+//  {
+//    Serial.print("got request from : 0x");
+//    Serial.print(from, HEX);
+//    Serial.print(": ");
+//    Serial.println((char*)buf);
+//    // Send a reply back to the originator client
+////    if (manager.sendtoWait(data, sizeof(data), from) != RH_ROUTER_ERROR_NONE)
+////      Serial.println("sendtoWait failed");
+//  }
+//}
+//void receive(){
+//  if (rf95.available())
+//  {
+//    // Should be a message for us now
+//    uint8_t len = sizeof(buf);
+// 
+//    if (rf95.recv(buf, &len))
+//    {
+//      
+////      RH_RF95::printBuffer("Received: ", buf, len);
+////      Serial.print("Got: ");
+////      Serial.println((char*)buf);
+////      setData((char*)buf);
+////      Serial.print("RSSI: ");
+////      Serial.println(rf95.lastRssi(), DEC);
+//        serial_relay(0);
+//        
+//      // Send a reply
+////      uint8_t data[] = "And hello back to you";
+////      rf95.send(data, sizeof(data));
+////      rf95.waitPacketSent();
+////      Serial.println("Sent a reply");
+//      
+//    }
+//    else
+//    {
+//      Serial.println("Receive failed");
+//    }
+//  }
 //}

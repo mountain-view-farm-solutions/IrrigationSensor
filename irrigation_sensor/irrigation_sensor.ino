@@ -20,7 +20,7 @@ const int BASE_STATION_ID= 0;
 
 
 #define VBATPIN            A9
-#define DEBUG              1
+#define DEBUG              0
 #define LOWBAT_LED         5
 
 
@@ -50,7 +50,7 @@ DallasTemperature tempsensors(&oneWire); // Pass our oneWire reference to Dallas
 
 // Helper setup
 int packetnum = 0;  // packet counter, we increment per xmission
-
+const int FRAME_LEN = 26;
    
 
 int get_temp(int idx, bool trigger){
@@ -81,7 +81,7 @@ void report_status_word(){
 
   digitalWrite(LOWBAT_LED, b<3.7);
 
-  char packet[32]="";
+  uint8_t packet[FRAME_LEN]="";
 
   // message format
   sprintf(packet, "%02x%02x%04x%04x%04x%04x%01x%04x", NODE_ID,       // 02 node id      
@@ -103,7 +103,7 @@ void report_status_word(){
     Serial.print("VBatRaw:    " ); Serial.println(rb);
     Serial.print("VBat:       " ); Serial.println(b);
     Serial.print("LOW VBat:   " ); Serial.println(b<3.7);
-    Serial.print("Packet:     " ); Serial.println(packet);
+    Serial.print("Packet:     " ); Serial.println((char*)packet);
   }
 
 //  if (digitalRead(TX_ENABLE) {
@@ -117,7 +117,7 @@ void report_status_word(){
   }
 }
 
-void vtransmitt(char *packet){
+void vtransmitt(uint8_t *packet){
   digitalWrite(TX_LED, HIGH);
 //  transmitt(packet);
   meshtransmitt(packet);
@@ -135,9 +135,9 @@ int get_water_raw(){
   return v;
 }
 
-void meshtransmitt(char* packet){
+void meshtransmitt(uint8_t* packet){
   digitalWrite(TX_LED, HIGH);
-  manager.sendtoWait((uint8_t *)packet, sizeof(packet), BASE_STATION_ID);
+  manager.sendtoWait(packet, FRAME_LEN, BASE_STATION_ID);
   digitalWrite(TX_LED, LOW);
 }
 
