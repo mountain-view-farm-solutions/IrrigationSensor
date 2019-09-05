@@ -109,7 +109,7 @@ class Handler(BaseHTTPRequestHandler):
 
         if ctx:
             template = template.format(**ctx)
-        self.wfile.write(template)
+        self.wfile.write(template.encode('utf8'))
 
 
 def main():
