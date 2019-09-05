@@ -94,7 +94,7 @@ class RPiBaseStation(object):
         return resp.decode('utf8')
 
 
-PORT = '/dev/tty'
+PORT = '/dev/ttyAMA0'
 BaseStation = RPiBaseStation(port=PORT)
 
 
