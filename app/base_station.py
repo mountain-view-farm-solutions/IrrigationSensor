@@ -103,7 +103,7 @@ class RPiBaseStation(object):
             inw = self._dev.inWaiting()
             if inw:
                 resp += self._dev.read(inw)
-            if resp.endswith('\r\n'):
+            if resp.endswith(b'\r\n'):
                 break
             if time.time() - st > timeout:
                 break
