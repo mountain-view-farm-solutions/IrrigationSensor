@@ -25,8 +25,10 @@ import serial
 class RPiBaseStation(object):
     def __init__(self, port):
         self._ctx = None
-        self._dev = serial.Serial(port=port)
+        # self._dev = serial.Serial(port=port)
         self._lock = Lock()
+
+    def run(self):
         t = Thread(target=self._loop)
         t.setDaemon(True)
         t.start()
@@ -52,8 +54,8 @@ class RPiBaseStation(object):
                    ('TEMPMID', 4),
                    ('TEMPTOP', 4),
                    ('Ain', 4),
-                   ('STATE', 4),
-                   ('VBATT', 4),
+                   ('STATE', 1),
+                   ('VBATT*', 4),
                    ('RSSI', 2),
                    ('FROM', 2))
 
@@ -62,6 +64,7 @@ class RPiBaseStation(object):
         rdata = []
         cbit = 0
         header, lens = zip(*headert)
+        header= list(header)
         for k, l in headert:
             rdata.append(resp[cbit:cbit + l])
             cbit += l
@@ -71,17 +74,19 @@ class RPiBaseStation(object):
 
         vraw = data[7]
         vbatt = vraw * 3.3 * 2 / 1024
-        rdata.append(vraw)
+
+        header.append('VBATT')
+        rdata.append('')
         fdata.append('{:0.2f}'.format(vbatt))
 
         with self._lock:
-            self._ctx['update_timestamp'] = ts = datetime.now().isoformat()
             self._ctx = {k: v for k, v in zip(header, fdata)}
+            self._ctx['update_timestamp'] = ts = datetime.now().isoformat()
 
         os.system('clear')
         print('--------- {}'.format(ts))
         print(''.join(['{:<10s}'.format(h) for h in header]))
-        print(''.join(['{:<10s}'.format(r) for r in rdata]))
+        print(''.join(['{:<10s}'.format(str(r)) for r in rdata]))
         print(''.join(['{:<10s}'.format(f) for f in fdata]))
 
     def _recv(self):
@@ -109,7 +114,13 @@ def main():
     run()
 
 
+def test():
+    x = '01080010001e00120000002990000'
+    BaseStation._parse(x)
+
+
 def run():
+    BaseStation.run()
     server_klass = HTTPServer
     handler_klass = Handler
 
@@ -119,5 +130,7 @@ def run():
 
 
 if __name__ == '__main__':
-    main()
+    # main()
+    test()
+
 # ============= EOF =============================================

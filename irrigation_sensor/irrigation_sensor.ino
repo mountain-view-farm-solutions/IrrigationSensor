@@ -20,7 +20,7 @@ const int BASE_STATION_ID= 0;
 
 
 #define VBATPIN            A9
-#define DEBUG              0
+#define DEBUG              1
 #define LOWBAT_LED         5
 
 
@@ -58,14 +58,14 @@ int get_temp(int idx, bool trigger){
   if (trigger){
      tempsensors.requestTemperatures();
   }
-  t = tempsensors.getTempCByIndex(0);
+  t = tempsensors.getTempCByIndex(idx);
   return t;
 }
 void report_status_word(){
 
-  int tt = get_temp(0, true);
-  int tm = get_temp(0, false);
-  int tg = get_temp(0, false);
+  int tg = get_temp(0, true);
+  int tt = get_temp(1, false);
+  int tm = get_temp(2, false);
   
   int h = 10;
   int v = get_water_raw();
