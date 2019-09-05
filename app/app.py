@@ -13,47 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-from http.server import HTTPServer, BaseHTTPRequestHandler
 
+from flask import Flask, render_template
 
 from app.base_station import BaseStation
 
-
-class Handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.end_headers()
-
-        ctx = BaseStation.get_context()
-        with open('home.html', 'r') as rfile:
-            template = rfile.read()
-
-        if ctx:
-            template = template.format(**ctx)
-        self.wfile.write(template.encode('utf8'))
+bsapp = Flask(__name__)
 
 
-def main():
-    run()
-
-
-def test():
-    x = '01080010001e00120000002990000'
-    BaseStation._parse(x)
-
-
-def run():
-    BaseStation.run()
-    server_klass = HTTPServer
-    handler_klass = Handler
-
-    server_address = ('', 8000)
-    httpd = server_klass(server_address, handler_klass)
-    httpd.serve_forever()
-
+@bsapp.route('/')
+def index():
+    ctx = BaseStation.get_context()
+    return render_template('index.html', **ctx)
 
 if __name__ == '__main__':
-    main()
-    # test()
+    bsapp.run(debug=True, host='0.0.0.0')
 
 # ============= EOF =============================================
