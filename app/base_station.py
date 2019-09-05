@@ -22,6 +22,8 @@ import serial
 
 
 class RPiBaseStation(object):
+    debug = True
+
     def __init__(self, port):
         self._ctx = {}
         self._dev = serial.Serial(port=port)
@@ -82,11 +84,12 @@ class RPiBaseStation(object):
             self._ctx = {k: v for k, v in zip(header, fdata)}
             self._ctx['update_timestamp'] = ts = datetime.now().isoformat()
 
-        os.system('clear')
-        print('--------- {}'.format(ts))
-        print(''.join(['{:<10s}'.format(h) for h in header]))
-        print(''.join(['{:<10s}'.format(str(r)) for r in rdata]))
-        print(''.join(['{:<10s}'.format(f) for f in fdata]))
+        if self.debug:
+            os.system('clear')
+            print('--------- {}'.format(ts))
+            print(''.join(['{:<10s}'.format(h) for h in header]))
+            print(''.join(['{:<10s}'.format(str(r)) for r in rdata]))
+            print(''.join(['{:<10s}'.format(f) for f in fdata]))
 
     def _recv(self):
         resp = self._dev.readline()
@@ -95,6 +98,5 @@ class RPiBaseStation(object):
 
 PORT = '/dev/ttyAMA0'
 BaseStation = RPiBaseStation(port=PORT)
-
 
 # ============= EOF =============================================

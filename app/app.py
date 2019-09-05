@@ -26,7 +26,11 @@ def index():
     ctx = BaseStation.get_context()
     return render_template('index.html', **ctx)
 
+
 if __name__ == '__main__':
+    BaseStation.run()
+    BaseStation.debug = False
+
     bsapp.run(debug=True, host='0.0.0.0')
 
 # ============= EOF =============================================
