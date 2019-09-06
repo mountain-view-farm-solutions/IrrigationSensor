@@ -33,7 +33,8 @@ char data[18];
 
 
 void setup() {
-  Serial1.begin(9600);
+  Serial1.begin(19200);
+  Serial.begin(9600);
   delay(1000);
   
   // relay comms
@@ -77,9 +78,8 @@ void setup() {
   manager.init();
   
 }
+
 uint8_t buf[RH_MESH_MAX_MESSAGE_LEN];
-
-
 
 void loop() {  
   meshreceive();
@@ -101,9 +101,10 @@ void serial_relay(uint8_t from){
   digitalWrite(RxLED, HIGH);
   char rssi[5];
   sprintf(rssi, "%02x%02x", abs(rf95.lastRssi()), from);
+  Serial.println((char*)buf);
   Serial1.print((char*)buf);
   Serial1.println(rssi);
-  delay(200);
+  delay(100);
   digitalWrite(RxLED, LOW);
   
 }

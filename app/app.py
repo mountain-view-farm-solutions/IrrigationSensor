@@ -13,24 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+import subprocess
+import sys
 
 from flask import Flask, render_template
 
-from base_station import BaseStation
+from base_station import BaseStationCTX
 
 bsapp = Flask(__name__)
 
 
 @bsapp.route('/')
 def index():
-    ctx = BaseStation.get_context()
+    ctx = BaseStationCTX()
     return render_template('index.html', **ctx)
 
 
 if __name__ == '__main__':
-    BaseStation.run()
-    BaseStation.debug = False
-
+    subprocess.Popen([sys.executable, 'base_station.py'])
     bsapp.run(debug=True, host='0.0.0.0')
 
 # ============= EOF =============================================

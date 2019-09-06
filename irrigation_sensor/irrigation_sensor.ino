@@ -12,7 +12,7 @@
 
 // General Configuration
 #define useHandShake       0
-const int updatePeriod=    1;   // in seconds
+const int updatePeriod=    2;   // in seconds
 const int MeasurePeriod=   10;   // in ms 
 const int threshold=       800;
 const int NODE_ID=         1;
@@ -20,7 +20,7 @@ const int BASE_STATION_ID= 0;
 
 
 #define VBATPIN            A9
-#define DEBUG              0
+#define DEBUG              1
 #define LOWBAT_LED         5
 
 
@@ -42,7 +42,7 @@ RHMesh manager(rf95, NODE_ID);
 #define WaterDOPin         11
 #define Status_LED         10
 #define ONE_WIRE_BUS       18  // Data wire is plugged into port 2 on the Arduino
-
+#define TEMP_RESOLUTION    10
 
 OneWire oneWire(ONE_WIRE_BUS); // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
 DallasTemperature tempsensors(&oneWire); // Pass our oneWire reference to Dallas Temperature. 
@@ -52,14 +52,14 @@ DallasTemperature tempsensors(&oneWire); // Pass our oneWire reference to Dallas
 int packetnum = 0;  // packet counter, we increment per xmission
 const int FRAME_LEN = 26;
    
-
 int get_temp(int idx, bool trigger){
-  int t=0;
+  float t=0;
   if (trigger){
      tempsensors.requestTemperatures();
   }
   t = tempsensors.getTempCByIndex(idx);
-  return t;
+
+  return t*10.0;
 }
 void report_status_word(){
 
@@ -86,9 +86,9 @@ void report_status_word(){
   // message format
   sprintf(packet, "%02x%02x%04x%04x%04x%04x%01x%04x", NODE_ID,       // 02 node id      
                                                       packetnum++,   // 02 packet counter
-                                                      tg,            // 04 temp ground
-                                                      tm,            // 04 temp mid
-                                                      tt,            // 04 temp top
+                                                      0,            // 04 temp ground
+                                                      0,            // 04 temp mid
+                                                      0,            // 04 temp top
                                                       v,             // 04 Ain
                                                       w,             // 01 State
                                                       rb);           // 04 VBatt 
@@ -219,7 +219,14 @@ void setup() {
   rf95.setTxPower(TX_POWER, false);
 
   manager.init();
-  
+
+  DeviceAddress devAddress;
+
+  for (int i=0; i<3; i++){
+    tempsensors.getAddress(devAddress, 0);
+    tempsensors.setResolution(devAddress, TEMP_RESOLUTION);
+  }
+
 }
    
 

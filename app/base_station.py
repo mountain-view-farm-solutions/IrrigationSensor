@@ -18,17 +18,45 @@ import os
 import time
 from datetime import datetime
 from threading import Thread, Lock
-
+from gpiozero import LED, Buzzer
 import serial
+import pickle
+
+# Configuration
+# =================================================
+PORT = '/dev/ttyAMA0'
+BAUDRATE = 19200
+BATT_LED_PIN = 'GPIO18'
+BUZZER_PIN = 'GPIO23'
+STATE_LED_PIN = 'GPI024'
+CONTEXT_PATH = './context'
+
+
+# =================================================
+
+class BaseStationContext(object):
+    def __call__(self):
+        with open(CONTEXT_PATH, 'r') as rfile:
+            return pickle.load(rfile)
+
+    def dump(self, ctx):
+        with open(CONTEXT_PATH, 'w') as wfile:
+            pickle.dump(ctx, wfile)
+
+
+BaseStationCTX = BaseStationContext()
 
 
 class RPiBaseStation(object):
     debug = True
 
-    def __init__(self, port):
+    def __init__(self):
         self._ctx = {}
-        self._dev = serial.Serial(port=port)
+        self._dev = serial.Serial(port=PORT, baudrate=BAUDRATE)
         self._lock = Lock()
+        self._batt_led = LED(BATT_LED_PIN)
+        self._buzzer = Buzzer(BUZZER_PIN)
+        self._state_led = LED(STATE_LED_PIN)
 
     def run(self):
         t = Thread(target=self._loop)
@@ -45,8 +73,35 @@ class RPiBaseStation(object):
             if resp:
                 try:
                     self._parse(resp)
+                    self._act()
                 except BaseException as e:
                     print('error: ', e, 'resp', resp, len(resp))
+
+    def _act(self):
+        vbatt = None
+        state = None
+
+        if self._ctx:
+            vbatt = self._ctx.get('VBATT')
+            state = self._ctx.get('STATE')
+
+        self._buzzer.off()
+        self._batt_led.off()
+        if vbatt is not None:
+            if vbatt < 4.0:
+                self._batt_led.on()
+                if vbatt < 3.8:
+                    self._buzzer.beep()
+                    if vbatt < 3.7:
+                        self._state_led.on()
+                    return
+
+        if state:
+            self._state_led.on()
+            self._buzzer.beep(3, 1)
+        else:
+            self._buzzer.off()
+            self._state_led.off()
 
     def _parse(self, resp):
         """
@@ -84,9 +139,10 @@ class RPiBaseStation(object):
         rdata.append('')
         fdata.append('{:0.2f}'.format(vbatt))
 
-        with self._lock:
-            self._ctx = {k: v for k, v in zip(header, fdata)}
-            self._ctx['update_timestamp'] = ts = datetime.now().isoformat()
+        # with self._lock:
+        ctx = {k: v for k, v in zip(header, fdata)}
+        ctx['update_timestamp'] = ts = datetime.now().isoformat()
+        BaseStationCTX.dump(ctx)
 
         if self.debug:
             os.system('clear')
@@ -96,23 +152,22 @@ class RPiBaseStation(object):
             print(''.join(['{:<10s}'.format(f) for f in fdata]))
 
     def _recv(self, timeout=4):
-        # resp = self._dev.readline()
-        resp = b''
-        st = time.time()
-        while 1:
-            inw = self._dev.inWaiting()
-            if inw:
-                resp += self._dev.read(inw)
-            if resp.endswith(b'\r\n'):
-                break
-            if time.time() - st > timeout:
-                break
-            time.sleep(0.1)
-
+        # resp = b''
+        # st = time.time()
+        # while 1:
+        #     inw = self._dev.inWaiting()
+        #     if inw:
+        #         resp += self._dev.read(inw)
+        #     if resp.endswith(b'\r\n'):
+        #         break
+        #     if time.time() - st > timeout:
+        #         return
+        #     time.sleep(0.1)
+        resp = self._dev.readline()
         return resp.decode('utf8')
 
 
-PORT = '/dev/ttyAMA0'
-BaseStation = RPiBaseStation(port=PORT)
-
+BaseStation = RPiBaseStation()
+if __name__ == '__main__':
+    BaseStation.run()
 # ============= EOF =============================================
