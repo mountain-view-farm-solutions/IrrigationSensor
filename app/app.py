@@ -30,7 +30,7 @@ def index():
 
 
 if __name__ == '__main__':
-    subprocess.Popen([sys.executable, 'base_station.py'])
+    subprocess.Popen([sys.executable, '/home/pi/IrrigationSensor/app/base_station.py'])
     bsapp.run(debug=True, host='0.0.0.0')
 
 # ============= EOF =============================================

@@ -3,29 +3,50 @@
         <meta charset="UTF-8">
         <title>MountainView Farm Solutions Irrigration Sensor</title>
         <meta http-equiv="refresh" content="3">
+
+<style>
+
+td {
+ text-align: right;
+}
+
+</style>
+
+
 </head>
 <body>
+
+
+    <h2> MetaData </h2>
+    <table border="1">
+        <tr><td>Timestamp</td><td>{{ update_timestamp }}</td></tr>
+        <tr><td>Packet</td><td>{{ PACKET }}</td></tr>
+        <tr><td>V Battery</td><td>{{ VBATT }}</td> </tr>
+    </table>
+   
+    <h2> Water</h2>
+    <table border="1">
+        <tr><td>State</td><td>{{ STATE }}</td></tr>    
+    </table>
+
     <h2> Temperatures </h2>
-    <table>
+    <table border="1">
+        <tr>
+          <th></th>
+          <th>C</th>
+          <th>F</th>
+        </tr>
         <tr>
             <td>Temp Top</td>
-            <td>{{ TEMPTOP }}</td>
+            <td>{{ TEMPTOP }}</td><td>{{ TEMPTOPF }}</td>
         </tr>
         <tr>
             <td>Temp Mid</td>
-            <td>{{ TEMPMID }}</td>
+            <td>{{ TEMPMID }}</td><td>{{ TEMPMIDF }}</td>
         </tr>
         <tr>
             <td>Temp Gnd</td>
-            <td>{{ TEMPGND }}</td>
-        </tr>
-        <tr>
-            <td>State</td>
-            <td>{{ STATE }}</td>
-        </tr>
-        <tr>
-            <td>V Battery</td>
-            <td>{{ VBATT }}</td>
+            <td width="50">{{ TEMPGND }}</td><td width="50">{{ TEMPGNDF }}</td>
         </tr>
     </table>
 </body>
