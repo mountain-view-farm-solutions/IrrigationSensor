@@ -86,9 +86,9 @@ void report_status_word(){
   // message format
   sprintf(packet, "%02x%02x%04x%04x%04x%04x%01x%04x", NODE_ID,       // 02 node id      
                                                       packetnum++,   // 02 packet counter
-                                                      0,            // 04 temp ground
-                                                      0,            // 04 temp mid
-                                                      0,            // 04 temp top
+                                                      tg,            // 04 temp ground
+                                                      tm,            // 04 temp mid
+                                                      tt,            // 04 temp top
                                                       v,             // 04 Ain
                                                       w,             // 01 State
                                                       rb);           // 04 VBatt 

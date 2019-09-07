@@ -5,42 +5,43 @@
 // Designed for a Adafruit Feather development board
 // Companion device to the Irrigation Sensor
 // receives message from sensor every x seconds
-// parses message for debugging here
-// relays message via I2C (Wire.h) to server board
+
 
 #include <RH_RF95.h>
 #include <RHMesh.h>
-//#include <Wire.h>
 
 // Radio
 #define RFM95_CS           8
 #define RFM95_RST          4
 #define RFM95_INT          7
 #define RF95_FREQ          915.0
-#define TX_POWER           13
+#define TX_POWER           20
 #define NODE_ID            0
 
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 RHMesh manager(rf95, NODE_ID);
 
 // general configuration
-#define DataReadyPin       0
-#define RxLED              13
+#define RxLED              20  // Red
+#define LOW_BATT_LED       23  // Red
+#define STATE_LED          22  // Green
+#define STATUS_LED         21  // Yellow
+#define BUZZER_PIN         19
 
-// globals
-int lastReadingTime;
-char data[18];
+#define DEBUG              0
+#define TIMEOUT            3000
 
 
 void setup() {
   Serial1.begin(19200);
-  Serial.begin(9600);
-  delay(1000);
+  if (DEBUG){
+    Serial.begin(9600);
+  }
   
-  // relay comms
-//  Wire.begin(8);
-//  Wire.onRequest(requestEvent);
-
+  pinMode(LOW_BATT_LED, OUTPUT);
+  pinMode(STATE_LED, OUTPUT);
+  pinMode(STATUS_LED, OUTPUT);
+  
   // Radio setup
   pinMode(RxLED, OUTPUT);
   pinMode(RFM95_RST, OUTPUT);
@@ -53,18 +54,18 @@ void setup() {
   delay(10);
   
   while (!rf95.init()) {
-    Serial.println("LoRa radio init failed");
-    Serial.println("Uncomment '#define SERIAL_DEBUG' in RH_RF95.cpp for detailed debug info");
+    //Serial.println("LoRa radio init failed");
+    //Serial.println("Uncomment '#define SERIAL_DEBUG' in RH_RF95.cpp for detailed debug info");
     while (1);
   }
-  Serial.println("LoRa radio init OK!");
+  //Serial.println("LoRa radio init OK!");
  
   // Defaults after init are 434.0MHz, modulation GFSK_Rb250Fd250, +13dbM
   if (!rf95.setFrequency(RF95_FREQ)) {
-    Serial.println("setFrequency failed");
+    //Serial.println("setFrequency failed");
     while (1);
   }
-  Serial.print("Set Freq to: "); Serial.println(RF95_FREQ);
+  //Serial.print("Set Freq to: "); Serial.println(RF95_FREQ);
  
   // Defaults after init are 434.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
 
@@ -88,23 +89,66 @@ void loop() {
 void meshreceive(){
   uint8_t len = sizeof(buf);
   uint8_t from;
-  if (manager.recvfromAck(buf, &len, &from))
-  {
+  digitalWrite(STATUS_LED, HIGH);
+  if (manager.recvfromAckTimeout(buf, &len, TIMEOUT, &from))
+  {  
+    digitalWrite(STATUS_LED,  LOW);
     serial_relay(from);
+  } else {
+    digitalWrite(STATUS_LED,  LOW);
+    delay(1000);
   }
 }
-
-
 
 
 void serial_relay(uint8_t from){
   digitalWrite(RxLED, HIGH);
   char rssi[5];
   sprintf(rssi, "%02x%02x", abs(rf95.lastRssi()), from);
-  Serial.println((char*)buf);
+  
   Serial1.print((char*)buf);
   Serial1.println(rssi);
-  delay(100);
+
+
+  char target[4];
+  strncpy(target, buf+21, 4);
+  int vbatt = (int)strtol(target, NULL, 16); 
+
+  char sb[1];
+  strncpy(sb, buf+20, 1);
+  int state = (int)strtol(sb, NULL, 16);
+  if (DEBUG){
+    Serial.println((char*)buf);
+    Serial.print("vbatt:");
+    Serial.println(vbatt);
+    Serial.print("state:");
+    Serial.println(state);
+  }
+  
+  digitalWrite(LOW_BATT_LED, LOW);
+  digitalWrite(STATE_LED, state);
+  
+  if (vbatt<4.0){
+    digitalWrite(STATE_LED, LOW);
+    digitalWrite(LOW_BATT_LED, HIGH);
+    if (vbatt<3.8){
+       // play buzzer
+       tone(BUZZER_PIN, 640, 400);
+       if (vbatt<3.7){
+         digitalWrite(STATE_LED, HIGH);
+       }
+    }
+  }
+  
+//  if (state){
+//     //play buzzer
+//     //tone(BUZZER_PIN, 640, 1000);
+//  }
+//  else {
+//    //noTone(BUZZER_PIN);
+//    delay(100);
+//  }
+  delay(300);
   digitalWrite(RxLED, LOW);
   
 }

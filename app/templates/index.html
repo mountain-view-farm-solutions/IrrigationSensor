@@ -2,20 +2,10 @@
 <head>
         <meta charset="UTF-8">
         <title>MountainView Farm Solutions Irrigration Sensor</title>
-        <meta http-equiv="refresh" content="3">
-
-<style>
-
-td {
- text-align: right;
-}
-
-</style>
-
-
+        <meta http-equiv="refresh" content="30">
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-
 
     <h2> MetaData </h2>
     <table border="1">
@@ -28,6 +18,15 @@ td {
     <table border="1">
         <tr><td>State</td><td>{{ STATE }}</td></tr>    
     </table>
+
+    {% if STATE %}
+        <embed height="60" type="audio/mp3" width="144"
+               src="{{ alarm_source }}"
+               hidden="true"
+               volume="60"
+               loop="false"
+               autostart="true" />
+    {% endif %}
 
     <h2> Temperatures </h2>
     <table border="1">

@@ -18,19 +18,22 @@ import sys
 
 from flask import Flask, render_template
 
-from base_station import BaseStationCTX
+# from base_station import BaseStationCTX
 
 bsapp = Flask(__name__)
 
 
 @bsapp.route('/')
 def index():
-    ctx = BaseStationCTX()
+    # ctx = BaseStationCTX()
+    ctx = {}
+
+    ctx['alarm_source'] = '/static/sounds/tornado_siren.mp3'
     return render_template('index.html', **ctx)
 
 
 if __name__ == '__main__':
-    subprocess.Popen([sys.executable, '/home/pi/IrrigationSensor/app/base_station.py'])
+
     bsapp.run(debug=True, host='0.0.0.0')
 
 # ============= EOF =============================================

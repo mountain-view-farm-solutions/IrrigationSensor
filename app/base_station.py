@@ -79,37 +79,36 @@ class RPiBaseStation(object):
             if resp:
                 try:
                     self._parse(resp)
-                    self._act()
+                    # self._act()
                 except BaseException as e:
                     print('error: ', e, 'resp', resp, len(resp))
                     #raise e
-    def _act(self):
-        vbatt = None
-        state = None
 
-        if self._ctx:
-            vbatt = float(self._ctx.get('VBATT'))
-            state = int(self._ctx.get('STATE'))
-
-        #print('asdf', state, self._ctx)
-
-        self._buzzer.stop()
-        self._batt_led.off()
-        if vbatt is not None:
-            if vbatt < 4.0:
-                self._batt_led.on()
-                if vbatt < 3.8:
-                    self._buzzer.play("A4")
-                    if vbatt < 3.7:
-                        self._state_led.on()
-                    return
-
-        if state:
-            self._state_led.on()
-            self._buzzer.play("A4")
-        else:
-            self._buzzer.stop()
-            self._state_led.off()
+    # def _act(self):
+    #     vbatt = None
+    #     state = None
+    #
+    #     if self._ctx:
+    #         vbatt = float(self._ctx.get('VBATT'))
+    #         state = int(self._ctx.get('STATE'))
+    #
+    #     self._buzzer.stop()
+    #     self._batt_led.off()
+    #     if vbatt is not None:
+    #         if vbatt < 4.0:
+    #             self._batt_led.on()
+    #             if vbatt < 3.8:
+    #                 self._buzzer.play("A4")
+    #                 if vbatt < 3.7:
+    #                     self._state_led.on()
+    #                 return
+    #
+    #     if state:
+    #         self._state_led.on()
+    #         self._buzzer.play("A4")
+    #     else:
+    #         self._buzzer.stop()
+    #         self._state_led.off()
 
     def _parse(self, resp):
         """
