@@ -2,31 +2,42 @@
 <head>
         <meta charset="UTF-8">
         <title>MountainView Farm Solutions Irrigration Sensor</title>
-        <meta http-equiv="refresh" content="30">
+        <meta http-equiv="refresh" content="15">
         <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+       <div id="container1" style="background-color: {{ bgcolor }}">	
+    <br/>
+    
+    <h1> MountainView Farm Solutions Flood Irrigation Dashboard </h1>
 
     <h2> MetaData </h2>
     <table border="1">
-        <tr><td>Timestamp</td><td>{{ update_timestamp }}</td></tr>
-        <tr><td>Packet</td><td>{{ PACKET }}</td></tr>
-        <tr><td>V Battery</td><td>{{ VBATT }}</td> </tr>
+        <tr><td>Timestamp</td><td>{{ update_timestamp | safe}}</td></tr>
+        <tr><td>Packet</td><td>{{ PACKET | safe}}</td></tr>
+        <tr><td>V Battery</td><td>{{ VBATT | safe}}</td> </tr>
     </table>
    
     <h2> Water</h2>
     <table border="1">
-        <tr><td>State</td><td>{{ STATE }}</td></tr>    
+        <tr><td>State</td><td>{{ STATE | safe }}</td></tr>    
     </table>
 
-    {% if STATE %}
-        <embed height="60" type="audio/mp3" width="144"
+
+    {% if STATE | safe  %}
+    <audio autoplay>
+  <source src="{{ alarm_source }}" type="audio/mpeg">
+  siren
+</audio>
+<!--        <embed height="60" type="audio/mpeg" width="144"
                src="{{ alarm_source }}"
                hidden="true"
                volume="60"
                loop="false"
                autostart="true" />
-    {% endif %}
+    
+-->
+{% endif %}
 
     <h2> Temperatures </h2>
     <table border="1">
@@ -37,15 +48,16 @@
         </tr>
         <tr>
             <td>Temp Top</td>
-            <td>{{ TEMPTOP }}</td><td>{{ TEMPTOPF }}</td>
+            <td>{{ TEMPTOP | safe }}</td><td>{{ TEMPTOPF | safe }}</td>
         </tr>
         <tr>
             <td>Temp Mid</td>
-            <td>{{ TEMPMID }}</td><td>{{ TEMPMIDF }}</td>
+            <td>{{ TEMPMID | safe }}</td><td>{{ TEMPMIDF | safe }}</td>
         </tr>
         <tr>
             <td>Temp Gnd</td>
-            <td width="50">{{ TEMPGND }}</td><td width="50">{{ TEMPGNDF }}</td>
+            <td width="50">{{ TEMPGND | safe }}</td><td width="50">{{ TEMPGNDF | safe}}</td>
         </tr>
     </table>
+<div>
 </body>

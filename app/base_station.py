@@ -53,6 +53,7 @@ class RPiBaseStation(object):
 
     def __init__(self):
         self._ctx = {}
+        BaseStationCTX.dump({})
         self._dev = serial.Serial(port=PORT, baudrate=BAUDRATE)
      #   self._lock = Lock()
         self._batt_led = LED(BATT_LED_PIN)
@@ -60,6 +61,7 @@ class RPiBaseStation(object):
         self._state_led = LED(STATE_LED_PIN)
 
     def run(self):
+	
         t = Thread(target=self._loop)
         #t.setDaemon(True)
         t.start()
