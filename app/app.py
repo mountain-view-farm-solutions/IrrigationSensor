@@ -13,12 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-import subprocess
-import sys
+
 import time
-
 from flask import Flask, render_template
-
 from base_station import BaseStationCTX
 
 bsapp = Flask(__name__)
@@ -26,13 +23,12 @@ bsapp = Flask(__name__)
 
 @bsapp.route('/')
 def index():
-    #ctx = BaseStationCTX()
-    ctx = {}
-#    ctx['STATE']= bool(int(ctx.get('STATE', int(time.time())%2 )))
+    ctx = BaseStationCTX()
+    # ctx['STATE']= bool(int(ctx.get('STATE', int(time.time())%2 )))
     t = int(time.time())
-    ctx['STATE']=c=bool(t%2)
-    ctx['bgcolor']='#8DEEF1' if c else '#F0C4C4'
-    ctx['update_timestamp']=t
+    # ctx['STATE']=c=bool(t%2)
+    ctx['bgcolor'] = '#8DEEF1' if ctx.get('STATE') else '#F0C4C4'
+    ctx['update_timestamp'] = t
     ctx['alarm_source'] = '/static/sounds/tornado_siren.mp3'
     return render_template('index.html', **ctx)
 

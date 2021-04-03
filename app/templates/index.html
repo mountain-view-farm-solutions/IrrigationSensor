@@ -6,58 +6,45 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-       <div id="container1" style="background-color: {{ bgcolor }}">	
-    <br/>
-    
-    <h1> MountainView Farm Solutions Flood Irrigation Dashboard </h1>
+    <div id="maincontainer">
+        <div id="container1" style="background-color: {{ bgcolor }}">
+            <h1> MountainView Farm Solutions Flood Irrigation Dashboard </h1>
+            <h2> MetaData </h2>
+            <table border="1">
+                <tr><td id="row_label">Timestamp</td><td>{{ update_timestamp | safe}}</td></tr>
+                <tr><td id="row_label">Packet</td><td>{{ PACKET | safe}}</td></tr>
+                <tr><td id="row_label">V Battery</td><td>{{ VBATT | safe}}</td> </tr>
+            </table>
 
-    <h2> MetaData </h2>
-    <table border="1">
-        <tr><td>Timestamp</td><td>{{ update_timestamp | safe}}</td></tr>
-        <tr><td>Packet</td><td>{{ PACKET | safe}}</td></tr>
-        <tr><td>V Battery</td><td>{{ VBATT | safe}}</td> </tr>
-    </table>
-   
-    <h2> Water</h2>
-    <table border="1">
-        <tr><td>State</td><td>{{ STATE | safe }}</td></tr>    
-    </table>
+            <h2> Water</h2>
+            <table border="1">
+                <tr><td id="row_label">State</td><td>{{ STATE | safe }}</td></tr>
+            </table>
 
+            {% if STATE  %}
+                <audio autoplay><source src="{{ alarm_source }}" type="audio/mpeg">siren</audio>
+            {% endif %}
 
-    {% if STATE | safe  %}
-    <audio autoplay>
-  <source src="{{ alarm_source }}" type="audio/mpeg">
-  siren
-</audio>
-<!--        <embed height="60" type="audio/mpeg" width="144"
-               src="{{ alarm_source }}"
-               hidden="true"
-               volume="60"
-               loop="false"
-               autostart="true" />
-    
--->
-{% endif %}
-
-    <h2> Temperatures </h2>
-    <table border="1">
-        <tr>
-          <th></th>
-          <th>C</th>
-          <th>F</th>
-        </tr>
-        <tr>
-            <td>Temp Top</td>
-            <td>{{ TEMPTOP | safe }}</td><td>{{ TEMPTOPF | safe }}</td>
-        </tr>
-        <tr>
-            <td>Temp Mid</td>
-            <td>{{ TEMPMID | safe }}</td><td>{{ TEMPMIDF | safe }}</td>
-        </tr>
-        <tr>
-            <td>Temp Gnd</td>
-            <td width="50">{{ TEMPGND | safe }}</td><td width="50">{{ TEMPGNDF | safe}}</td>
-        </tr>
-    </table>
-<div>
+            <h2> Temperatures </h2>
+            <table border="1">
+                <tr>
+                  <th></th>
+                  <th>C</th>
+                  <th>F</th>
+                </tr>
+                <tr>
+                    <td id="row_label">Top</td>
+                    <td>{{ TEMPTOP | safe }}</td><td>{{ TEMPTOPF | safe }}</td>
+                </tr>
+                <tr>
+                    <td id="row_label">Mid</td>
+                    <td>{{ TEMPMID | safe }}</td><td>{{ TEMPMIDF | safe }}</td>
+                </tr>
+                <tr>
+                    <td id="row_label">Gnd</td>
+                    <td width="50">{{ TEMPGND | safe }}</td><td width="50">{{ TEMPGNDF | safe}}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
 </body>

@@ -37,8 +37,11 @@ CONTEXT_PATH = '/tmp/context.ctx'
 
 class BaseStationContext(object):
     def __call__(self):
-        with open(CONTEXT_PATH, 'rb') as rfile:
-            return pickle.load(rfile)
+        if os.path.isfile(CONTEXT_PATH):
+            with open(CONTEXT_PATH, 'rb') as rfile:
+                return pickle.load(rfile)
+        else:
+            return {}
 
     def dump(self, ctx):
         with open(CONTEXT_PATH, 'wb') as wfile:
@@ -55,21 +58,15 @@ class RPiBaseStation(object):
         self._ctx = {}
         BaseStationCTX.dump({})
         self._dev = serial.Serial(port=PORT, baudrate=BAUDRATE)
-     #   self._lock = Lock()
         self._batt_led = LED(BATT_LED_PIN)
         self._buzzer = TonalBuzzer(BUZZER_PIN)
         self._state_led = LED(STATE_LED_PIN)
 
     def run(self):
-	
+
         t = Thread(target=self._loop)
-        #t.setDaemon(True)
         t.start()
         t.join()
-
-    #def get_context(self):
-    #    with self._lock:
-    #        return self._ctx
 
     def _loop(self):
         while 1:
@@ -81,36 +78,8 @@ class RPiBaseStation(object):
             if resp:
                 try:
                     self._parse(resp)
-                    # self._act()
                 except BaseException as e:
                     print('error: ', e, 'resp', resp, len(resp))
-                    #raise e
-
-    # def _act(self):
-    #     vbatt = None
-    #     state = None
-    #
-    #     if self._ctx:
-    #         vbatt = float(self._ctx.get('VBATT'))
-    #         state = int(self._ctx.get('STATE'))
-    #
-    #     self._buzzer.stop()
-    #     self._batt_led.off()
-    #     if vbatt is not None:
-    #         if vbatt < 4.0:
-    #             self._batt_led.on()
-    #             if vbatt < 3.8:
-    #                 self._buzzer.play("A4")
-    #                 if vbatt < 3.7:
-    #                     self._state_led.on()
-    #                 return
-    #
-    #     if state:
-    #         self._state_led.on()
-    #         self._buzzer.play("A4")
-    #     else:
-    #         self._buzzer.stop()
-    #         self._state_led.off()
 
     def _parse(self, resp):
         """
@@ -148,7 +117,6 @@ class RPiBaseStation(object):
         rdata.append('')
         fdata.append('{:0.2f}'.format(vbatt))
 
-        # with self._lock:
         ctx = {k: v for k, v in zip(header, fdata)}
         ctx['update_timestamp'] = ts = datetime.now().isoformat()
         
@@ -168,24 +136,10 @@ class RPiBaseStation(object):
             print(''.join(['{:<10s}'.format(str(r)) for r in rdata]))
             print(''.join(['{:<10s}'.format(f) for f in fdata]))
 
-    def _recv(self, timeout=4):
-        # resp = b''
-        # st = time.time()
-        # while 1:
-        #     inw = self._dev.inWaiting()
-        #     if inw:
-        #         resp += self._dev.read(inw)
-        #     if resp.endswith(b'\r\n'):
-        #         break
-        #     if time.time() - st > timeout:
-        #         return
-        #     time.sleep(0.1)
+    def _recv(self):
         resp = self._dev.readline()
         return resp.decode('utf8')
 
 
 BaseStation = RPiBaseStation()
-#if __name__ == '__main__':
-#    BaseStation.debug = True
-#    BaseStation.run()
 # ============= EOF =============================================

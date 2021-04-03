@@ -1,8 +1,8 @@
 html { font-family: sans-serif; background: #eee; padding: 1rem; }
 body { max-width: 960px; margin: 0 auto; background: white; }
 
-h1 { font-family: sans-serif; color: #977ba8; margin: 1rem 0; }
-h2 { font-family: sans-serif; color: #177bf8; margin: 1rem 0; }
+h1 { font-family: sans-serif; color: darkred; margin: 1rem 0; }
+h2 { font-family: sans-serif; color: black; margin: 1rem 0; }
 
 a { color: #377ba8; }
 hr { border: none; border-top: 1px solid lightgray; }
@@ -34,13 +34,28 @@ td, th {
  padding: 8px
 }
 
-th {
- background-color: #CBF2F3;
- color: purple;
+thead tr {
+ background-color: #009879;
+ color: #ffffff;
+ text-align: left;
 }
+
 table {
  border-collapse: collapse;
+ margin: 25px 0;
+ font-size: 0.9em;
+ font-family: sans-serif;
+ min-width: 400px;
+ box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+tbody tr {
+ border-bottom: 1px solid #dddddd;
+}
+
+#row_label{
+ font-weight: bold;
 }
 #container1 {
- border-radius: 25px;
+ padding: 10px;
 }
