@@ -58,21 +58,24 @@ class RPiBaseStation(object):
         self._ctx = {}
         BaseStationCTX.dump({})
         self._dev = serial.Serial(port=PORT, baudrate=BAUDRATE)
+        print('Device: {}'.format(self._dev))
         self._batt_led = LED(BATT_LED_PIN)
         self._buzzer = TonalBuzzer(BUZZER_PIN)
         self._state_led = LED(STATE_LED_PIN)
 
     def run(self):
-
+        print('Launching BaseStation pool thread')
         t = Thread(target=self._loop)
         t.start()
         t.join()
 
     def _loop(self):
+        print('BaseStation loop started')
         while 1:
             try:
                 resp = self._recv()
-            except BaseException:
+            except BaseException as e:
+                print('BaseStation recv exception {}'.format(e))
                 continue
 
             if resp:
